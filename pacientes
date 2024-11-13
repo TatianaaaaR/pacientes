@@ -1,0 +1,112 @@
+#include <iostream>
+using namespace std;
+
+struct Nodo {
+    int edad;
+    int niup;
+    struct Nodo* izquierda;
+    struct Nodo* derecha;
+};
+struct Nodo* crearNodo(int edad, int niup) {
+    struct Nodo* nuevoNodo = (struct Nodo*)malloc(sizeof(struct Nodo));
+    nuevoNodo->edad = edad;
+    nuevoNodo->niup = niup;
+    nuevoNodo->izquierda = NULL;
+    nuevoNodo->derecha = NULL;
+    return nuevoNodo;
+}
+
+
+struct Nodo* insertar(struct Nodo* raiz, int edad, int niup) {
+    if (raiz == NULL) {
+        return crearNodo(edad, niup);
+    }
+    if (edad > raiz->edad) {
+        raiz->izquierda = insertar(raiz->izquierda, edad, niup);
+    } else {
+        raiz->derecha = insertar(raiz->derecha, edad, niup);
+    }
+    return raiz;
+}
+
+Función void mostrarOrden(struct Nodo* raiz) {
+    if (raiz != NULL) {
+        mostrarOrden(raiz->izquierda);
+        cout << "Edad: " << raiz->edad << ", NIUP: " << raiz->niup << endl;
+        mostrarOrden(raiz->derecha);
+    }
+}
+struct Nodo* buscar(struct Nodo* raiz, int niup) {
+    if (raiz == NULL || raiz->niup == niup) {
+        return raiz;
+    }
+    if (niup < raiz->niup) {
+        return buscar(raiz->izquierda, niup);
+    }
+    return buscar(raiz->derecha, niup);
+}
+
+struct Nodo* encontrarMinimo(struct Nodo* nodo) {
+    struct Nodo* actual = nodo;
+    while (actual && actual->izquierda != NULL) {
+        actual = actual->izquierda;
+    }
+    return actual;
+}
+
+struct Nodo* eliminarNodo(struct Nodo* raiz, int niup) {
+    if (raiz == NULL) {
+        return raiz;
+    }
+    if (niup < raiz->niup) {
+        raiz->izquierda = eliminarNodo(raiz->izquierda, niup);
+    } else if (niup > raiz->niup) {
+        raiz->derecha = eliminarNodo(raiz->derecha, niup);
+    } else {
+        if (raiz->izquierda == NULL && raiz->derecha == NULL) {
+            free(raiz);
+            return NULL;
+        }
+        
+        else if (raiz->izquierda == NULL) {
+            struct Nodo* temp = raiz->derecha;
+            free(raiz);
+            return temp;
+        } else if (raiz->derecha == NULL) {
+            struct Nodo* temp = raiz->izquierda;
+            free(raiz);
+            return temp;
+        }
+        
+        struct Nodo* temp = encontrarMinimo(raiz->derecha);
+        raiz->edad = temp->edad;
+        raiz->niup = temp->niup;
+        raiz->derecha = eliminarNodo(raiz->derecha, temp->niup);
+    }
+    return raiz;
+}
+
+int main() {
+    struct Nodo* raiz = NULL;
+    raiz = insertar(raiz, 65, 123);
+    raiz = insertar(raiz, 70, 456);
+    raiz = insertar(raiz, 50, 789);
+    raiz = insertar(raiz, 40, 101);
+
+    cout << "Pacientes en orden descendente de edad:" << endl;
+    mostrarOrden(raiz);
+
+    cout << "\nBuscando paciente con NIUP 456:" << endl;
+    struct Nodo* encontrado = buscar(raiz, 456);
+    if (encontrado != NULL) {
+        cout << "Paciente encontrado - Edad: " << encontrado->edad << ", NIUP: " << encontrado->niup << endl;
+    } else {
+        cout << "Paciente no encontrado" << endl;
+    }
+
+    cout << "\nEliminando paciente con NIUP 456:" << endl;
+    raiz = eliminarNodo(raiz, 456);
+    mostrarOrden(raiz);
+
+    return 0;
+}
